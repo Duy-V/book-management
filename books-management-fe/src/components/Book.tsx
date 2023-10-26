@@ -24,7 +24,7 @@ const Book = ({ book }: Props) => {
     setSelectedBook(book);
   };
   const handleClickDelete = async () => {
-    await deleteItem(book);
+    await deleteItem.mutate(book);
   };
   return (
     <Card>

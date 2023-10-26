@@ -7,6 +7,7 @@ type booksActions = {
   setBooks:(books: TBook[]) => void
 }
 const useBooksStore = create<booksState & booksActions >((set) => ({
+  
   books: null,
   setBooks: (books: TBook[]) => {
     set({ books: books });

@@ -2,37 +2,67 @@ import { useState } from "react";
 import { TBook } from "../types/book";
 import axiosClient from "../services/axios-client";
 import useBooksStore from "../store/books";
-
-// type UseItemsReturnType = [
-//   items: any,
-//   {
-//     addItem: (data: any) => void;
-//     deleteItem: (itemId: string) => void;
-//     fetchBooks: () => void;
-//   }
-// ];
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useItems() {
-  const { books, setBooks } = useBooksStore();
+  const { setBooks } = useBooksStore();
+  const queryClient = useQueryClient();
+  const { data, isLoading } = useQuery({
+    queryKey: ["books"],
+    queryFn: async () => {
+      const response = await axiosClient.get("/books");
+      return response.data;
+    },
+  });
+  const addItem = useMutation({
+    mutationFn: async (book: any) => {
+      return axiosClient.post("/books", book);
+    },
+    onSuccess: async () => {
+      queryClient.invalidateQueries(["books"]);
+    },
+    onError: async () => {
+      console.log("onError");
+    },
+  });
   const fetchBooks = async () => {
     const response = await axiosClient.get("/books");
     setBooks(response.data);
-    console.log("fetchbookssss");
-  };
-  const addItem = async (book: any) => {
-    await axiosClient.post("/books", book);
-    await fetchBooks();
   };
 
-  const editItem = async (id: string, book: any) => {
-    await axiosClient.patch(`/books/${id}`, book);
-    await fetchBooks();
-  };
+  const editItem = useMutation({
+    mutationFn: async ({
+      bookId,
+      convertValues,
+    }: {
+      bookId: string;
+      convertValues: TBook;
+    }) => {
+      return axiosClient.patch(`/books/${bookId}`, convertValues);
+    },
+    onSuccess: async () => {
+      queryClient.invalidateQueries(["books"]);
+    },
+    onError: async () => {
+      console.log("onError");
+    },
+  });
 
-  const deleteItem = async (item: any) => {
-    await axiosClient.delete(`/books/${item.id}`);
-    await fetchBooks();
-  };
+  const deleteItem = useMutation({
+    mutationFn: async (book: TBook) => {
+      return axiosClient.delete(`/books/${book.id}`);
+    },
+    onSuccess: async () => {
+      queryClient.invalidateQueries(["books"]);
+    },
+  });
 
-  return { books, addItem, deleteItem,editItem, fetchBooks };
+  return {
+    books: data || [],
+    isLoading,
+    addItem,
+    deleteItem,
+    editItem,
+    fetchBooks,
+  };
 }

@@ -11,20 +11,19 @@ import useFormModalStore from "./store/form-modal";
 import useBooksStore from "./store/books";
 import { useItems } from "./hooks/useItems";
 import { If, Then } from "react-if";
+import { useQuery } from "@tanstack/react-query";
 type FormType = "tag" | "book" | null;
 
 function App() {
-  // const {books, setBooks} = useBooksStore();
-  // const [books, setBooks] = useState<TBook[]>([]);
-  // const [loading, { showLoading, hideLoading }] = useLoading();
-  const { selectedBook } = useBookStore();
+  const { selectedBook, setSelectedBook } = useBookStore();
   const { form, setForm } = useFormModalStore();
-  const { books, fetchBooks } = useItems();
+  const { books, isLoading } = useItems();
 
-  useEffect(() => {
-    fetchBooks();
-  }, []);
   const handleSelectForm = (form: FormType) => () => {
+    if (form === "book") {
+      setSelectedBook(null);
+    }
+
     setForm(form);
   };
 
@@ -57,7 +56,6 @@ function App() {
             <If condition={form === "book"}>
               <Then>
                 <BookForm
-                  onFetchBooks={fetchBooks}
                   onCancel={handleSelectForm(null)}
                   book={selectedBook}
                   onClose={handleCloseBookForm}

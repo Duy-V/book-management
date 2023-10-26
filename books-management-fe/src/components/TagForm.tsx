@@ -15,6 +15,7 @@ import { useForm } from "react-hook-form";
 import { AppInput, AppRadio } from "./ui/app-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTags } from "../hooks/useTags";
 
 type Props = {
   onCancel: () => void;
@@ -52,6 +53,8 @@ const validationSchema = z.object({
 type TagFormSchema = z.infer<typeof validationSchema>;
 const TagForm = ({ onCancel }: Props) => {
   const [tagName, setTagName] = useState("");
+  const { tags, isLoading } = useTags();
+
   const form = useForm({
     defaultValues: {
       name: "",
@@ -64,18 +67,7 @@ const TagForm = ({ onCancel }: Props) => {
   console.log(formState.errors);
   const [tagColor, setTagColor] = useState("");
   const [showAlert, setShowAlert] = useState(false);
-  const [tags, setTags] = useState<TTag[]>([]);
-  const [loading, { showLoading, hideLoading }] = useLoading();
-
-  const getTags = async () => {
-    showLoading();
-    const response = await axiosClient.get("/tags");
-    setTags(response.data);
-    hideLoading();
-  };
-  useEffect(() => {
-    getTags();
-  }, []);
+  
   const handleSubmit = async (values: FormValues) => {
     const response = await axiosClient.post("/tags", {
       name: values.name,
@@ -87,7 +79,6 @@ const TagForm = ({ onCancel }: Props) => {
     setTimeout(() => {
       setShowAlert(false);
     }, 3000);
-    getTags();
   };
 
   return (
@@ -96,10 +87,10 @@ const TagForm = ({ onCancel }: Props) => {
         Tag Form
       </Typography>
       <div className="flex flex-wrap gap-2">
-        {loading ? (
+        {isLoading ? (
           <Spinner color="red" />
         ) : (
-          tags.map((tag) => (
+          tags.map((tag: TTag) => (
             <Chip
               key={tag.id}
               color={tag.color as color}

@@ -14,7 +14,6 @@ const AppRadio = ({ options, control, name }: Props) => {
     name,
     control,
   });
-  console.log(field.value);
   return (
     <div>
       {options.map((option) => (
