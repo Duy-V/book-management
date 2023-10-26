@@ -1,60 +1,58 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Alert,
   Button,
   Card,
   Chip,
   Typography,
-  Spinner,
 } from "@material-tailwind/react";
 import { type color } from "@material-tailwind/react/types/components/chip";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { useTags } from "../hooks/useTags";
 import axiosClient from "../services/axios-client";
 import { TTag } from "../types/tag";
-import { useLoading } from "../hooks/useLoading";
-import { useForm } from "react-hook-form";
 import { AppInput, AppRadio } from "./ui/app-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useTags } from "../hooks/useTags";
+import useTagStore from "../store/tag";
 
 type Props = {
   onCancel: () => void;
 };
-type FormValues = {
-  name: string;
-  color: string;
-};
-export type TOption = typeof options;
+
+export type TOptions = typeof options;
+
 const options = [
+  {
+    color: "blue",
+    label: "Blue",
+  },
   {
     color: "red",
     label: "Red",
   },
   {
-    color: "teal",
-    label: "Teal",
-  },
-  {
-    color: "blue",
-    label: "blue",
-  },
-  {
-    color: "orange",
-    label: "Orange",
-  },
-  {
     color: "green",
     label: "Green",
   },
+  {
+    color: "amber",
+    label: "Amber",
+  },
+  {
+    color: "teal",
+    label: "Teal",
+  },
 ];
+
 const validationSchema = z.object({
   name: z.string().min(1, "Name is required"),
+  color: z.string().min(1, "Color is required"),
 });
-type TagFormSchema = z.infer<typeof validationSchema>;
-const TagForm = ({ onCancel }: Props) => {
-  const [tagName, setTagName] = useState("");
-  const { tags, isLoading } = useTags();
 
+type FormValues = z.infer<typeof validationSchema>;
+
+const TagForm = ({ onCancel }: Props) => {
   const form = useForm({
     defaultValues: {
       name: "",
@@ -63,22 +61,22 @@ const TagForm = ({ onCancel }: Props) => {
     resolver: zodResolver(validationSchema),
   });
 
-  const { control, handleSubmit: handleSubmitForm, formState } = form;
-  console.log(formState.errors);
-  const [tagColor, setTagColor] = useState("");
+  const { tags, addTag, isLoading } = useTags();
+
+  const { control, handleSubmit: handleSubmitForm, formState, reset } = form;
+
   const [showAlert, setShowAlert] = useState(false);
-  
+
   const handleSubmit = async (values: FormValues) => {
-    const response = await axiosClient.post("/tags", {
-      name: values.name,
-      color: values.color,
-    });
+    const { name, color } = values;
+    addTag.mutate(values);
+
     setShowAlert(true);
-    setTagName("");
-    setTagColor("");
+
     setTimeout(() => {
       setShowAlert(false);
     }, 3000);
+    reset();
   };
 
   return (
@@ -86,20 +84,22 @@ const TagForm = ({ onCancel }: Props) => {
       <Typography variant="h4" color="blue-gray">
         Tag Form
       </Typography>
-      <div className="flex flex-wrap gap-2">
-        {isLoading ? (
-          <Spinner color="red" />
-        ) : (
-          tags.map((tag: TTag) => (
+
+      {isLoading ? (
+        <div>Loading ....</div>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {tags.map((tag: TTag) => (
             <Chip
               key={tag.id}
               color={tag.color as color}
-              size="sm"
               value={tag.name}
+              size="sm"
             />
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
+
       <form
         className="max-w-screen-lg mt-8 mb-2"
         onSubmit={handleSubmitForm(handleSubmit)}
@@ -109,18 +109,26 @@ const TagForm = ({ onCancel }: Props) => {
             name="name"
             label="Name"
             control={control}
-            error={!!formState?.errors?.name}
+            error={Boolean(formState?.errors?.name)}
           />
           {formState?.errors?.name && (
             <Typography variant="small" color="red">
-              {formState?.errors?.name?.message}
+              {formState.errors?.name.message}
             </Typography>
           )}
+
           <div className="flex flex-wrap gap-4">
             <AppRadio name="color" control={control} options={options} />
           </div>
+          {formState?.errors?.color && (
+            <Typography variant="small" color="red">
+              {formState.errors?.color.message}
+            </Typography>
+          )}
+
+          {showAlert && <Alert color="green">Tag created successfully!</Alert>}
         </div>
-        {showAlert && <Alert color="green">Tag submit successfully</Alert>}
+
         <div className="flex gap-2">
           <Button fullWidth onClick={onCancel}>
             Cancel
@@ -133,4 +141,5 @@ const TagForm = ({ onCancel }: Props) => {
     </Card>
   );
 };
+
 export default TagForm;

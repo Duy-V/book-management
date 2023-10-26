@@ -12,19 +12,20 @@ import useBooksStore from "./store/books";
 import { useItems } from "./hooks/useItems";
 import { If, Then } from "react-if";
 import { useQuery } from "@tanstack/react-query";
+import useTagStore from "./store/tag";
 type FormType = "tag" | "book" | null;
 
 function App() {
   const { selectedBook, setSelectedBook } = useBookStore();
+  const { selectedTag, setSelectedTag } = useTagStore();
+  
   const { form, setForm } = useFormModalStore();
   const { books, isLoading } = useItems();
 
   const handleSelectForm = (form: FormType) => () => {
-    if (form === "book") {
-      setSelectedBook(null);
-    }
-
     setForm(form);
+    setSelectedBook(null);
+    setSelectedTag(null)
   };
 
   const handleCloseBookForm = () => {

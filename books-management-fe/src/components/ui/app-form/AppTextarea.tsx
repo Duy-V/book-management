@@ -7,7 +7,6 @@ const AppTextarea = ({ label, control, name }: Props) => {
     control,
     
   });
-  console.log(field);
   return (
     <Textarea size="lg"
       value={field.value}

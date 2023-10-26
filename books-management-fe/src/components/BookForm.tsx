@@ -18,7 +18,7 @@ import { TBook } from "../types/book";
 import { useItems } from "../hooks/useItems";
 import { useForm } from "react-hook-form";
 import { AppInput, AppTextarea, AppChip } from "./ui/app-form";
-import useFormModalStore from "../store/form-modal";
+import useBookStore from "../store/book";
 
 type Props = {
   onCancel: () => void;
@@ -27,10 +27,10 @@ type Props = {
 };
 const BookForm = ({ onCancel, book, onClose }: Props) => {
   const { books, addItem, editItem } = useItems();
-  const { form, setForm } = useFormModalStore();
+  const { selectedBook, setSelectedBook } = useBookStore();
 
-  const formState = useForm();
-  const { control, handleSubmit: handleSubmitForm, reset } = formState;
+  const form = useForm();
+  const { control, handleSubmit: handleSubmitForm, reset } = form;
   console.log();
   const [tags, setTags] = useState<TTag[]>([]);
   const [loading, { showLoading, hideLoading }] = useLoading();
@@ -44,6 +44,7 @@ const BookForm = ({ onCancel, book, onClose }: Props) => {
     } else {
       addItem.mutate(convertValues);
     }
+    setSelectedBook(null);
     onClose();
   };
   const getTags = async () => {
@@ -56,11 +57,18 @@ const BookForm = ({ onCancel, book, onClose }: Props) => {
     getTags();
   }, []);
   useEffect(() => {
-    if (!book || form === "book") {
-      reset();
-    } else {
-      reset({ ...book, tags: book.tags.map((tag) => tag.id) });
+    if (!book) {
+      reset({
+        name: "",
+        description: "",
+        price: 0,
+        publicationDate: "",
+        author: "",
+        tags: [],
+      });
+      return;
     }
+    reset({ ...book, tags: book.tags.map((tag) => tag.id) });
   }, [book, reset]);
   return (
     <Card className="p-4">

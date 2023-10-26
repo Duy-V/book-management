@@ -7,7 +7,6 @@ const AppInput = ({ label, control, name, error }: Props) => {
     control,
     
   });
-  console.log(field);
   return (
     <Input
       value={field.value}

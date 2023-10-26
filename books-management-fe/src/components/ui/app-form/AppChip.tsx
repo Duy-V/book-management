@@ -14,7 +14,6 @@ const AppChip = ({ label, control, name, options }: Props) => {
     control,
     defaultValue: [],
   });
-  console.log("field", field);
   return options?.map((option) => (
     <Chip
       key={option.id}
