@@ -13,6 +13,8 @@ import { TTag } from "../types/tag";
 import { useLoading } from "../hooks/useLoading";
 import { useForm } from "react-hook-form";
 import { AppInput, AppRadio } from "./ui/app-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 type Props = {
   onCancel: () => void;
@@ -21,7 +23,7 @@ type FormValues = {
   name: string;
   color: string;
 };
-export type TOptions = typeof options;
+export type TOption = typeof options;
 const options = [
   {
     color: "red",
@@ -44,10 +46,22 @@ const options = [
     label: "Green",
   },
 ];
+const validationSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+});
+type TagFormSchema = z.infer<typeof validationSchema>;
 const TagForm = ({ onCancel }: Props) => {
   const [tagName, setTagName] = useState("");
-  const form = useForm();
-  const { control, handleSubmit: handleSubmitForm } = form;
+  const form = useForm({
+    defaultValues: {
+      name: "",
+      color: options[0].color,
+    },
+    resolver: zodResolver(validationSchema),
+  });
+
+  const { control, handleSubmit: handleSubmitForm, formState } = form;
+  console.log(formState.errors);
   const [tagColor, setTagColor] = useState("");
   const [showAlert, setShowAlert] = useState(false);
   const [tags, setTags] = useState<TTag[]>([]);
@@ -100,7 +114,17 @@ const TagForm = ({ onCancel }: Props) => {
         onSubmit={handleSubmitForm(handleSubmit)}
       >
         <div className="flex flex-col gap-6 mb-4">
-          <AppInput name="name" label="Name" control={control} />
+          <AppInput
+            name="name"
+            label="Name"
+            control={control}
+            error={!!formState?.errors?.name}
+          />
+          {formState?.errors?.name && (
+            <Typography variant="small" color="red">
+              {formState?.errors?.name?.message}
+            </Typography>
+          )}
           <div className="flex flex-wrap gap-4">
             <AppRadio name="color" control={control} options={options} />
           </div>

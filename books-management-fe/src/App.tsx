@@ -10,7 +10,7 @@ import useBookStore from "./store/book";
 import useFormModalStore from "./store/form-modal";
 import useBooksStore from "./store/books";
 import { useItems } from "./hooks/useItems";
-
+import { If, Then } from "react-if";
 type FormType = "tag" | "book" | null;
 
 function App() {
@@ -49,15 +49,21 @@ function App() {
             <BookList books={books} />
           </div>
           <div className="col-span-4 space-y-2">
-            {form === "tag" && <TagForm onCancel={handleSelectForm(null)} />}
-            {form === "book" && (
-              <BookForm
-                onFetchBooks={fetchBooks}
-                onCancel={handleSelectForm(null)}
-                book={selectedBook}
-                onClose={handleCloseBookForm}
-              />
-            )}
+            <If condition={form === "tag"}>
+              <Then>
+                <TagForm onCancel={handleSelectForm(null)} />
+              </Then>
+            </If>
+            <If condition={form === "book"}>
+              <Then>
+                <BookForm
+                  onFetchBooks={fetchBooks}
+                  onCancel={handleSelectForm(null)}
+                  book={selectedBook}
+                  onClose={handleCloseBookForm}
+                />
+              </Then>
+            </If>
           </div>
         </div>
       </div>

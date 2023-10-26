@@ -1,7 +1,7 @@
 import Input from "@material-tailwind/react/components/Input";
 import { useController } from "react-hook-form";
-type Props = { label: string; name: string; control: any };
-const AppInput = ({ label, control, name }: Props) => {
+type Props = { label: string; name: string; control: any; error?: boolean };
+const AppInput = ({ label, control, name, error }: Props) => {
   const { field } = useController({
     name,
     control,
@@ -15,6 +15,7 @@ const AppInput = ({ label, control, name }: Props) => {
       label={label}
       variant="outlined"
       crossOrigin={true}
+      error={error}
     />
   );
 };
